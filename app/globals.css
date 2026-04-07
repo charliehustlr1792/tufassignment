@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 :root {
@@ -8,7 +9,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: 'Outfit', system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
@@ -22,5 +23,124 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
+}
+
+/* Page Flip Animation - Realistic book page turn */
+@keyframes flip-page-next {
+  0% {
+    transform: rotateX(0deg) translateZ(0);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  30% {
+    transform: rotateX(-25deg) translateZ(10px);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.15);
+  }
+  50% {
+    transform: rotateX(-90deg) translateZ(20px);
+    box-shadow: 0 30px 40px rgba(0,0,0,0.2);
+  }
+  70% {
+    transform: rotateX(-155deg) translateZ(10px);
+    box-shadow: 0 20px 30px rgba(0,0,0,0.15);
+  }
+  100% {
+    transform: rotateX(-180deg) translateZ(0);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+}
+
+@keyframes flip-page-prev {
+  0% {
+    transform: rotateX(0deg) translateZ(0);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+  30% {
+    transform: rotateX(25deg) translateZ(10px);
+    box-shadow: 0 -20px 30px rgba(0,0,0,0.15);
+  }
+  50% {
+    transform: rotateX(90deg) translateZ(20px);
+    box-shadow: 0 -30px 40px rgba(0,0,0,0.2);
+  }
+  70% {
+    transform: rotateX(155deg) translateZ(10px);
+    box-shadow: 0 -20px 30px rgba(0,0,0,0.15);
+  }
+  100% {
+    transform: rotateX(180deg) translateZ(0);
+    box-shadow: 0 0 0 rgba(0,0,0,0);
+  }
+}
+
+/* Simpler fade-flip for content swap */
+@keyframes flip-fade-next {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg);
+  }
+  40% {
+    opacity: 0.4;
+    transform: perspective(1200px) rotateX(-60deg);
+  }
+  60% {
+    opacity: 0.4;
+    transform: perspective(1200px) rotateX(60deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg);
+  }
+}
+
+@keyframes flip-fade-prev {
+  0% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg);
+  }
+  40% {
+    opacity: 0.4;
+    transform: perspective(1200px) rotateX(60deg);
+  }
+  60% {
+    opacity: 0.4;
+    transform: perspective(1200px) rotateX(-60deg);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1200px) rotateX(0deg);
+  }
+}
+
+.animate-flip-next {
+  animation: flip-fade-next 0.6s ease-in-out;
+  transform-origin: center top;
+  transform-style: preserve-3d;
+}
+
+.animate-flip-prev {
+  animation: flip-fade-prev 0.6s ease-in-out;
+  transform-origin: center bottom;
+  transform-style: preserve-3d;
+}
+
+/* Legacy classes for compatibility */
+.flip-next {
+  animation: flip-fade-next 0.6s ease-in-out;
+  transform-style: preserve-3d;
+  transform-origin: top center;
+}
+
+.flip-prev {
+  animation: flip-fade-prev 0.6s ease-in-out;
+  transform-style: preserve-3d;
+  transform-origin: bottom center;
+}
+
+.font-display {
+  font-family: 'Bebas Neue', sans-serif;
+}
+
+.font-body {
+  font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 }
