@@ -76,6 +76,7 @@ const CalendarContainer = () => {
   const touchStartY = useRef<number>(0)
   const touchEndX = useRef<number>(0)
   const touchEndY = useRef<number>(0)
+  const touchStartTime = useRef<number>(0)
 
   useEffect(() => {
     preloadPageTurnSound()
@@ -171,6 +172,7 @@ const CalendarContainer = () => {
     const handleTouchStart = (e: TouchEvent) => {
       startedOnInteractive = isInteractiveTarget(e.target)
       const touch = e.touches[0]
+      touchStartTime.current = Date.now()
       touchStartX.current = touch.clientX
       touchStartY.current = e.touches[0].clientY
       touchEndX.current = touch.clientX
@@ -193,10 +195,13 @@ const CalendarContainer = () => {
       const endY = touchEndY.current || fallbackTouch.clientY
       const deltaY = touchStartY.current - endY
       const deltaX = touchStartX.current - endX
+      const duration = Date.now() - touchStartTime.current
       const now = Date.now()
-      if (Math.abs(deltaY) < 50) return
+      const verticalDistance = Math.abs(deltaY)
+      const isQuickFlick = verticalDistance >= 22 && duration <= 180
+      if (verticalDistance < 35 && !isQuickFlick) return
       if (Math.abs(deltaY) <= Math.abs(deltaX)) return
-      if (now - lastScrollTime.current < 800) return
+      if (now - lastScrollTime.current < 700) return
       lastScrollTime.current = now
       changeMonth(deltaY > 0 ? 'next' : 'prev')
     }

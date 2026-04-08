@@ -57,10 +57,10 @@ const DayCell = memo(({
   const holiday = HOLIDAYS[holidayKey(date)]
   const hasHoliday = !!holiday && inMonth
 
-  const base = 'relative w-full min-h-[34px] sm:min-h-[36px] flex items-center justify-center cursor-pointer transition-colors duration-100 select-none font-medium rounded-[2px]'
+  const base = 'relative w-full min-h-[30px] sm:min-h-[36px] flex items-center justify-center cursor-pointer transition-colors duration-100 select-none font-medium rounded-[2px]'
   const focusR = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-1 focus-visible:z-10'
 
-  let cls = `${base} ${focusR} text-[11.5px] sm:text-[13px]`
+  let cls = `${base} ${focusR} text-[10px] sm:text-[13px]`
 
   if (!inMonth) {
     cls += ' text-gray-300 cursor-default pointer-events-none'
@@ -108,12 +108,12 @@ const DayCell = memo(({
       )}
 
       {today && !isRangeStart && !isRangeEnd && (
-        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-[3px] h-[3px] bg-cyan-500 rounded-full" />
+        <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-0.75 h-0.75 bg-cyan-500 rounded-full" />
       )}
 
       {hasHoliday && (
         <span
-          className="absolute bottom-0.5 right-0.5 w-[3px] h-[3px] bg-red-500 rounded-full"
+          className="absolute bottom-0.5 right-0.5 w-0.75 h-0.75 bg-red-500 rounded-full"
           title={holiday}
           aria-hidden="true"
         />

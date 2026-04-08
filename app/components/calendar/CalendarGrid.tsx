@@ -43,7 +43,7 @@ const CalendarGrid = memo(({
           return (
             <div
               key={label}
-              className={`text-center tracking-[0.08em] py-1 text-[10px] sm:text-[11px] ${
+              className={`text-center tracking-[0.01em] sm:tracking-[0.08em] py-1 text-[8px] sm:text-[11px] ${
                 isWeekend
                   ? 'text-[#0891b2] font-extrabold'
                   : 'text-gray-500 font-bold'
