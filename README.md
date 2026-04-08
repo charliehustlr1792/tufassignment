@@ -113,17 +113,19 @@ public/
 - **Local images** — Month images served from `/public/months/` for fast loading and offline reliability.
 - **`localStorage` persistence** — Notes survive page refreshes without needing a backend.
 
-## Deployment
+## Shortcomings (Honest Self-Review)
 
-The easiest way to deploy is via [Vercel](https://vercel.com):
+- I could not replicate the hero section exactly like the reference image within the assignment timeframe. The overall direction is close, but the geometry, layering precision, and typography alignment are not pixel-perfect.
+- The component still does not fully sell the illusion of a real wall calendar. It reads as a polished UI card in places instead of a physical hanging paper calendar.
+- The scroll/swipe flip animation works, but it can still feel mechanical. Motion timing, easing, and depth transitions need refinement for a more natural page-turn feel.
+- Mobile interaction quality is improved but not production-proof. Gesture handling is sensitive to edge cases and deserves stronger testing across devices and browsers.
 
-```bash
-npm i -g vercel
-vercel
-```
+## What Could Have Been Better
 
-Or check the [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for other options.
-
-## License
-
-MIT
+- Add a real event system (not just notes):
+  - Event creation with title, time, and optional color/category.
+  - Event badges directly inside day cells.
+  - Event detail popover or panel.
+  - Edit/delete support and recurring events.
+- Improve visual fidelity:
+  - Replace CSS-approximated decorative elements with high-quality assets/SVGs for spiral rings, pin, paper texture, and print-like shadows.

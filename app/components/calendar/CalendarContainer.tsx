@@ -39,15 +39,13 @@ const CalendarSheet = ({
 
       <div className="px-3 sm:px-5 pt-3 pb-4 sm:pb-5">
         <div className="flex gap-3 sm:gap-4 items-start">
-          {/* Notes panel — fixed 130px to match reference width ratio */}
-          <div className="pt-0.5" style={{ width: '130px', minWidth: '130px', flexShrink: 0 }}>
+          <div className="pt-0.5 min-w-40 max-w-40">
             <NotesPanel
               selectedRange={selectedRange}
               currentMonth={month}
             />
           </div>
 
-          {/* Calendar grid */}
           <div className="flex-1 min-w-0">
             <CalendarGrid
               days={days}
@@ -113,14 +111,11 @@ const CalendarContainer = () => {
       changeMonth(date > displayMonth ? 'next' : 'prev')
     }
     setSelectedRange(prev => {
-      // No selection yet → select this date (start only, end comes on 2nd click)
       if (!prev.start) return { start: date, end: null }
-      // Have start but no end → complete the range
       if (!prev.end) {
         if (isSameDay(date, prev.start)) return { start: date, end: date }
         return normalizeDateRange(prev.start, date)
       }
-      // Already have a complete range → start fresh
       return { start: date, end: null }
     })
     setHoverDate(null)
@@ -148,7 +143,6 @@ const CalendarContainer = () => {
     btn?.focus()
   }, [handleDateClick])
 
-  // Mouse wheel handling
   useEffect(() => {
     const el = calendarRef.current
     if (!el) return
@@ -164,7 +158,6 @@ const CalendarContainer = () => {
     return () => el.removeEventListener('wheel', handleWheel)
   }, [changeMonth])
 
-  // Touch swipe handling for mobile
   useEffect(() => {
     const el = calendarRef.current
     if (!el) return
@@ -231,38 +224,27 @@ const CalendarContainer = () => {
       : ''
 
   return (
-    <div className="h-screen bg-gradient-to-br from-slate-200 via-gray-100 to-slate-300 flex items-center justify-center px-3 py-4 sm:px-6 sm:py-6 overflow-hidden">
+    <div className="h-screen bg-linear-to-br from-slate-200 via-gray-100 to-slate-300 flex items-center justify-center px-3 py-4 sm:px-6 sm:py-6 overflow-hidden">
       <div
         ref={calendarRef}
-        className="w-full select-none"
-        style={{ maxWidth: '480px' }}
+        className="w-full max-w-120 select-none"
       >
-        {/* Page stack effect */}
-        <div className="relative w-full" style={{ perspective: '1800px' }}>
+        <div className="relative w-full perspective-[1800px]">
           <div
-            className="absolute left-[3px] right-[3px] bg-white shadow-sm"
-            style={{ bottom: '-6px', height: '12px', zIndex: 0 }}
+            className="absolute left-0.75 right-0.75 -bottom-1.5 h-3 z-0 bg-white shadow-sm"
             aria-hidden="true"
           />
           <div
-            className="absolute left-[6px] right-[6px] bg-gray-50 shadow-sm"
-            style={{ bottom: '-10px', height: '12px', zIndex: -1 }}
+            className="absolute left-1.5 right-1.5 -bottom-2.5 h-3 z-[-1] bg-gray-50 shadow-sm"
             aria-hidden="true"
           />
           <div
-            className="absolute left-[9px] right-[9px] bg-gray-100"
-            style={{ bottom: '-13px', height: '12px', zIndex: -2 }}
+            className="absolute left-2.25 right-2.25 -bottom-3.25 h-3 z-[-2] bg-gray-100"
             aria-hidden="true"
           />
 
-          {/* Current sheet */}
           <div
-            className={`w-full relative z-10 ${currentSheetClass}`}
-            style={{
-              transformOrigin: 'center top',
-              transformStyle: 'preserve-3d',
-              willChange: 'transform, opacity',
-            }}
+            className={`w-full relative z-10 origin-top transform-3d will-change-[transform,opacity] ${currentSheetClass}`}
             aria-live="polite"
             aria-atomic="true"
           >
@@ -277,15 +259,9 @@ const CalendarContainer = () => {
             />
           </div>
 
-          {/* Incoming sheet (during flip) */}
           {incomingMonth && (
             <div
-              className={`absolute inset-0 w-full z-20 ${incomingSheetClass}`}
-              style={{
-                transformOrigin: 'center top',
-                transformStyle: 'preserve-3d',
-                willChange: 'transform, opacity',
-              }}
+              className={`absolute inset-0 w-full z-20 origin-top transform-3d will-change-[transform,opacity] ${incomingSheetClass}`}
               aria-hidden="true"
             >
               <CalendarSheet
@@ -301,7 +277,6 @@ const CalendarContainer = () => {
           )}
         </div>
 
-        {/* Scroll/swipe hint */}
         <div className="text-center pt-4 pb-1 text-[8px] text-gray-400 flex items-center justify-center gap-1.5 tracking-[0.15em] uppercase">
           <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />

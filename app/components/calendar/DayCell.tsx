@@ -4,7 +4,6 @@ import { memo } from 'react'
 import { format } from 'date-fns'
 import { isToday, isInCurrentMonth, isWeekend } from '@/app/utils/dateUtils'
 
-// ── Indian public holidays ───────────────────────────────────────────────
 const HOLIDAYS: Record<string, string> = {
   '2025-1-26': 'Republic Day',
   '2025-3-17': 'Holi',
@@ -58,7 +57,6 @@ const DayCell = memo(({
   const holiday = HOLIDAYS[holidayKey(date)]
   const hasHoliday = !!holiday && inMonth
 
-  // Deeper teal-blue: #0891b2 (cyan-600 equivalent)
   const base = 'relative w-full min-h-[34px] sm:min-h-[36px] flex items-center justify-center cursor-pointer transition-colors duration-100 select-none font-medium rounded-[2px]'
   const focusR = 'focus:outline-none focus-visible:ring-2 focus-visible:ring-cyan-600 focus-visible:ring-offset-1 focus-visible:z-10'
 
@@ -100,7 +98,6 @@ const DayCell = memo(({
     >
       {dayNum}
 
-      {/* Holiday tooltip on hover */}
       {hasHoliday && !isRangeStart && !isRangeEnd && (
         <span
           className="pointer-events-none absolute -top-6 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-red-600 px-1.5 py-0.5 text-[9px] font-semibold text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus:opacity-100 z-20"
@@ -110,12 +107,10 @@ const DayCell = memo(({
         </span>
       )}
 
-      {/* Today indicator dot */}
       {today && !isRangeStart && !isRangeEnd && (
         <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-[3px] h-[3px] bg-cyan-500 rounded-full" />
       )}
 
-      {/* Holiday dot */}
       {hasHoliday && (
         <span
           className="absolute bottom-0.5 right-0.5 w-[3px] h-[3px] bg-red-500 rounded-full"

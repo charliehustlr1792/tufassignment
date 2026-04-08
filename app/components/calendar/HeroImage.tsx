@@ -31,31 +31,19 @@ const HeroImage = memo(({ currentMonth }: HeroImageProps) => {
 
   return (
     <div className="relative w-full">
-      {/* Spiral binding rings — sits ABOVE the image area, not clipped */}
       <div
-        className="absolute left-3 right-3 z-30 flex justify-between pointer-events-none"
-        style={{ top: '-10px' }}
+        className="absolute -top-2.5 left-3 right-3 z-30 flex justify-between pointer-events-none"
         aria-hidden="true"
       >
         {Array.from({ length: 22 }).map((_, i) => (
           <div
             key={i}
-            style={{
-              width: '8px',
-              height: '18px',
-              borderRadius: '0 0 50% 50%',
-              border: '2px solid rgba(20,20,20,0.6)',
-              borderTop: 'none',
-              background: 'linear-gradient(180deg, rgba(230,230,230,0.5), rgba(180,180,180,0.3))',
-              flexShrink: 0,
-            }}
+            className="w-2 h-4.5 rounded-b-full border-2 border-[rgba(20,20,20,0.6)] border-t-0 bg-[linear-gradient(180deg,rgba(230,230,230,0.5),rgba(180,180,180,0.3))] shrink-0"
           />
         ))}
       </div>
 
-      {/* Image container — overflow-hidden only here, doesn't clip spirals */}
-      <div className="relative w-full overflow-hidden" style={{ aspectRatio: '16/9.5' }}>
-        {/* Background photo */}
+      <div className="relative w-full overflow-hidden aspect-16/9.5">
         <Image
           src={image.url}
           alt={image.alt}
@@ -66,7 +54,6 @@ const HeroImage = memo(({ currentMonth }: HeroImageProps) => {
           draggable={false}
         />
 
-        {/* Left cyan wedge only — fully opaque, clean diagonal */}
         <svg
           className="absolute inset-0 w-full h-full z-10"
           viewBox="0 0 1000 600"
@@ -79,31 +66,14 @@ const HeroImage = memo(({ currentMonth }: HeroImageProps) => {
           />
         </svg>
 
-        {/* Year + Month text — bottom-right, over the photo */}
         <div
-          className="absolute z-20 text-right leading-none select-none"
-          style={{ bottom: '14px', right: '18px' }}
+          className="absolute z-20 text-right leading-none select-none bottom-3.5 right-4.5"
         >
-          <p
-            className="text-white font-extrabold"
-            style={{
-              fontSize: 'clamp(0.95rem, 2.8vw, 1.4rem)',
-              letterSpacing: '0.12em',
-              lineHeight: 1.15,
-              textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-            }}
-          >
+          <p className="text-white text-[clamp(0.95rem,2.8vw,1.4rem)] tracking-[0.12em] drop-shadow-[0_1px_6px_rgba(0,0,0,0.5)]">
             {year}
           </p>
           <p
-            className="text-white font-black"
-            style={{
-              fontSize: 'clamp(1.5rem, 5vw, 2.6rem)',
-              letterSpacing: '-0.02em',
-              lineHeight: 1,
-              marginTop: '2px',
-              textShadow: '0 2px 10px rgba(0,0,0,0.5)',
-            }}
+            className="text-white font-black text-[clamp(1.5rem,5vw,2.6rem)] tracking-[0.05em] leading-none mt-0.5 drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]"
           >
             {monthName}
           </p>

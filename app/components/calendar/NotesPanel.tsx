@@ -10,8 +10,6 @@ interface NotesPanelProps {
   currentMonth: Date
 }
 
-// ── helpers ────────────────────────────────────────────────────────────────
-
 const isNoteVisibleForMonth = (noteRange: DateRange | null | undefined, month: Date): boolean => {
   if (!noteRange?.start || !noteRange?.end) return false
   const ms = startOfMonth(month)
@@ -38,31 +36,23 @@ const formatRangeShort = (range: DateRange): string => {
   return `${format(s, 'MMM d')}–${format(e, 'd')}`
 }
 
-// Number of ruled lines shown — closer to wall calendar print layout
 const LINE_COUNT = 8
-
-// ── component ──────────────────────────────────────────────────────────────
 
 const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
   const [notes, setNotes] = useState<Note[]>(() => loadNotes())
-  // Which line index is being edited
   const [editingLine, setEditingLine] = useState<number | null>(null)
   const [lineInput, setLineInput] = useState('')
 
   const monthKey = format(currentMonth, 'yyyy-MM')
-  // Treat a single selected date (start only, no end) as a single-day range
   const effectiveRange: DateRange = selectedRange.start && !selectedRange.end
     ? { start: selectedRange.start, end: selectedRange.start }
     : selectedRange
   const hasRange = !!effectiveRange.start
 
-  // ── persistence ──────────────────────────────────────────────────────────
   useEffect(() => { saveNotes(notes) }, [notes])
 
-  // ── line notes: filter to only those relevant this month / range ─────────
   const visibleNotes = useMemo(() =>
     notes.filter(n => {
-      // Notes without a range belong to their creation month
       if (!n.range) return format(new Date(n.createdAt), 'yyyy-MM') === monthKey
       return (
         isNoteVisibleForMonth(n.range, currentMonth) ||
@@ -72,7 +62,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
     [notes, currentMonth, effectiveRange, hasRange, monthKey]
   )
 
-  // Map line index → note content for quick lookup
   const lineNoteMap = useMemo(() => {
     const map: Record<number, Note> = {}
     visibleNotes.forEach((n, idx) => {
@@ -81,7 +70,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
     return map
   }, [visibleNotes])
 
-  // ── actions ───────────────────────────────────────────────────────────────
   const handleLineClick = useCallback((lineIdx: number) => {
     setEditingLine(lineIdx)
     setLineInput(lineNoteMap[lineIdx]?.content ?? '')
@@ -92,7 +80,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
     setEditingLine(null)
     setLineInput('')
     if (!content) {
-      // Delete note at this line if it existed
       const existing = lineNoteMap[lineIdx]
       if (existing) setNotes(prev => prev.filter(n => n.id !== existing.id))
       return
@@ -114,7 +101,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
   const handleLineKeyDown = useCallback((e: React.KeyboardEvent, lineIdx: number) => {
     if (e.key === 'Enter') { e.preventDefault(); handleLineSave(lineIdx) }
     if (e.key === 'Escape') { setEditingLine(null); setLineInput('') }
-    // Tab to next line
     if (e.key === 'Tab') {
       e.preventDefault()
       handleLineSave(lineIdx)
@@ -128,16 +114,12 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
     }
   }, [handleLineSave, lineNoteMap])
 
-  // ── render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col h-full">
-
-      {/* "Notes" header — small caps, matching reference */}
-      <div className="text-gray-700 font-semibold mb-2 text-[9.5px] tracking-[0.11em] uppercase">
+      <div className="text-gray-700 font-semibold text-xs tracking-[0.11em]">
         Notes
       </div>
 
-      {/* Ruled lines */}
       <div className="flex flex-col gap-0 flex-1">
         {Array.from({ length: LINE_COUNT }).map((_, idx) => {
           const note = lineNoteMap[idx]
@@ -147,7 +129,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
             <div
               key={idx}
               className="relative h-6"
-              // Each line is a fixed height — tight ruled paper spacing
             >
               {isEditing ? (
                 <input
@@ -166,7 +147,7 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
                   onClick={() => handleLineClick(idx)}
                   className="absolute inset-0 w-full text-left bg-transparent focus:outline-none group border-b border-gray-300 pb-px"
                   aria-label={note ? `Edit note: ${note.content}` : `Add note on line ${idx + 1}`}
-                  title={note?.range ? `📅 ${formatRangeShort(note.range)}` : undefined}
+                  title={note?.range ? `${formatRangeShort(note.range)}` : undefined}
                 >
                   {note ? (
                     <span
@@ -175,7 +156,6 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
                       {note.content}
                     </span>
                   ) : (
-                    // Empty line — show faint + on hover
                     <span
                       className="block opacity-0 group-hover:opacity-30 transition-opacity text-gray-400 text-[10px] leading-5.5"
                       aria-hidden="true"
@@ -190,10 +170,9 @@ const NotesPanel = memo(({ selectedRange, currentMonth }: NotesPanelProps) => {
         })}
       </div>
 
-      {/* Range tag — shown below lines when a range is selected */}
       {hasRange && (
         <div className="mt-2 text-cyan-600 font-semibold truncate text-[8px] tracking-[0.05em]" title={`Selected: ${formatRangeShort(effectiveRange)}`}>
-          📅 {formatRangeShort(effectiveRange)}
+          {formatRangeShort(effectiveRange)}
         </div>
       )}
     </div>

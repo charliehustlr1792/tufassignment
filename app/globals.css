@@ -26,22 +26,6 @@ body {
   font-family: 'Outfit', system-ui, -apple-system, sans-serif;
 }
 
-/*
-  ═══════════════════════════════════════════════════════
-  PAGE FLIP — two-sheet system
-
-  The current page lifts UP from the top binding and
-  peels away, while the incoming page settles in from
-  behind. This creates a natural wall-calendar feel
-  where the outgoing page flips over the spiral binding.
-
-  sheet-out: current page lifts and rotates away
-  sheet-in:  new page was behind, now settles into view
-  ═══════════════════════════════════════════════════════
-*/
-
-/* ── NEXT (scrolling forward) ── */
-
 @keyframes sheet-out-next {
   0% {
     transform: perspective(1800px) rotateX(0deg);
@@ -86,8 +70,6 @@ body {
     filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12));
   }
 }
-
-/* ── PREV (scrolling backward) ── */
 
 @keyframes sheet-out-prev {
   0% {

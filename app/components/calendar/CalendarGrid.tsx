@@ -37,8 +37,6 @@ const CalendarGrid = memo(({
 }: CalendarGridProps) => {
   return (
     <div role="grid" aria-label="Calendar" className="w-full">
-
-      {/* Weekday header row */}
       <div className="grid grid-cols-7 mb-0.5">
         {WEEKDAY_LABELS.map((label, idx) => {
           const isWeekend = idx >= 5
@@ -57,7 +55,6 @@ const CalendarGrid = memo(({
         })}
       </div>
 
-      {/* Day cells */}
       <div className="grid grid-cols-7">
         {days.map((date) => {
           const isRangeStart = areDatesEqual(date, selectedRange.start)
