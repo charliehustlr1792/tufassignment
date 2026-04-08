@@ -28,118 +28,133 @@ body {
 
 /*
   ═══════════════════════════════════════════════════════
-  PAGE FLIP ANIMATION
-  
-  Uses rotateX on the TOP edge (transform-origin: center top)
-  so the page appears to peel away from the top binding —
-  like a physical wall calendar whose pages flip up and over.
+  PAGE FLIP — two-sheet system
 
-  - "next"  → current page lifts forward & flips away upward
-  - "prev"  → comes back down from above
+  The current page lifts UP from the top binding and
+  peels away, while the incoming page settles in from
+  behind. This creates a natural wall-calendar feel
+  where the outgoing page flips over the spiral binding.
 
-  The content swap (setDisplayMonth) fires at 300ms, halfway
-  through the 600ms animation, so the new month is revealed
-  as the page comes back down — identical to turning a real page.
+  sheet-out: current page lifts and rotates away
+  sheet-in:  new page was behind, now settles into view
   ═══════════════════════════════════════════════════════
 */
 
-/*
-  Flip-next: page lifts UP from bottom, curls over the top spiral binding,
-  then the new month settles back down. Realistic wall-calendar feel.
+/* ── NEXT (scrolling forward) ── */
 
-  - Smooth ease-in for the lift, ease-out for the settle
-  - Subtle scale reduction adds depth (page moves away from viewer)
-  - Shadow intensity peaks at max rotation
-  - Content swaps at 45% (just before the page is fully vertical)
-*/
-
-@keyframes flip-next {
-  0%   {
-    transform: perspective(1500px) rotateX(0deg) scale(1);
+@keyframes sheet-out-next {
+  0% {
+    transform: perspective(1800px) rotateX(0deg);
     opacity: 1;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12));
   }
-  30%  {
-    transform: perspective(1500px) rotateX(-55deg) scale(0.97);
-    opacity: 0.7;
-    filter: drop-shadow(0 20px 25px rgba(0,0,0,0.25));
+  40% {
+    transform: perspective(1800px) rotateX(-60deg);
+    opacity: 0.85;
+    filter: drop-shadow(0 16px 24px rgba(0,0,0,0.22));
   }
-  45%  {
-    transform: perspective(1500px) rotateX(-78deg) scale(0.95);
-    opacity: 0.15;
-    filter: drop-shadow(0 30px 30px rgba(0,0,0,0.3));
-  }
-  55%  {
-    transform: perspective(1500px) rotateX(-78deg) scale(0.95);
-    opacity: 0.15;
-    filter: drop-shadow(0 30px 30px rgba(0,0,0,0.3));
-  }
-  70%  {
-    transform: perspective(1500px) rotateX(-40deg) scale(0.97);
-    opacity: 0.7;
-    filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
-  }
-  90%  {
-    transform: perspective(1500px) rotateX(-5deg) scale(1);
-    opacity: 0.95;
-    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.1));
+  70% {
+    transform: perspective(1800px) rotateX(-85deg);
+    opacity: 0.3;
+    filter: drop-shadow(0 20px 28px rgba(0,0,0,0.25));
   }
   100% {
-    transform: perspective(1500px) rotateX(0deg) scale(1);
-    opacity: 1;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    transform: perspective(1800px) rotateX(-95deg);
+    opacity: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
   }
 }
 
-@keyframes flip-prev {
-  0%   {
-    transform: perspective(1500px) rotateX(0deg) scale(1);
-    opacity: 1;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+@keyframes sheet-in-next {
+  0% {
+    transform: perspective(1800px) rotateX(80deg);
+    opacity: 0;
   }
-  30%  {
-    transform: perspective(1500px) rotateX(55deg) scale(0.97);
-    opacity: 0.7;
-    filter: drop-shadow(0 20px 25px rgba(0,0,0,0.25));
+  30% {
+    transform: perspective(1800px) rotateX(40deg);
+    opacity: 0.6;
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
   }
-  45%  {
-    transform: perspective(1500px) rotateX(78deg) scale(0.95);
-    opacity: 0.15;
-    filter: drop-shadow(0 30px 30px rgba(0,0,0,0.3));
-  }
-  55%  {
-    transform: perspective(1500px) rotateX(78deg) scale(0.95);
-    opacity: 0.15;
-    filter: drop-shadow(0 30px 30px rgba(0,0,0,0.3));
-  }
-  70%  {
-    transform: perspective(1500px) rotateX(40deg) scale(0.97);
-    opacity: 0.7;
-    filter: drop-shadow(0 15px 20px rgba(0,0,0,0.2));
-  }
-  90%  {
-    transform: perspective(1500px) rotateX(5deg) scale(1);
+  70% {
+    transform: perspective(1800px) rotateX(8deg);
     opacity: 0.95;
-    filter: drop-shadow(0 6px 8px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.14));
   }
   100% {
-    transform: perspective(1500px) rotateX(0deg) scale(1);
+    transform: perspective(1800px) rotateX(0deg);
     opacity: 1;
-    filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12));
   }
 }
 
-.animate-flip-next {
-  animation: flip-next 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+/* ── PREV (scrolling backward) ── */
+
+@keyframes sheet-out-prev {
+  0% {
+    transform: perspective(1800px) rotateX(0deg);
+    opacity: 1;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12));
+  }
+  40% {
+    transform: perspective(1800px) rotateX(60deg);
+    opacity: 0.85;
+    filter: drop-shadow(0 16px 24px rgba(0,0,0,0.22));
+  }
+  70% {
+    transform: perspective(1800px) rotateX(85deg);
+    opacity: 0.3;
+    filter: drop-shadow(0 20px 28px rgba(0,0,0,0.25));
+  }
+  100% {
+    transform: perspective(1800px) rotateX(95deg);
+    opacity: 0;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.05));
+  }
+}
+
+@keyframes sheet-in-prev {
+  0% {
+    transform: perspective(1800px) rotateX(-80deg);
+    opacity: 0;
+  }
+  30% {
+    transform: perspective(1800px) rotateX(-40deg);
+    opacity: 0.6;
+    filter: drop-shadow(0 12px 20px rgba(0,0,0,0.18));
+  }
+  70% {
+    transform: perspective(1800px) rotateX(-8deg);
+    opacity: 0.95;
+    filter: drop-shadow(0 8px 14px rgba(0,0,0,0.14));
+  }
+  100% {
+    transform: perspective(1800px) rotateX(0deg);
+    opacity: 1;
+    filter: drop-shadow(0 6px 12px rgba(0,0,0,0.12));
+  }
+}
+
+.animate-sheet-out-next {
+  animation: sheet-out-next 0.65s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
   transform-origin: center top;
-  transform-style: preserve-3d;
   backface-visibility: hidden;
 }
 
-.animate-flip-prev {
-  animation: flip-prev 0.7s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+.animate-sheet-in-next {
+  animation: sheet-in-next 0.65s cubic-bezier(0.0, 0.0, 0.2, 1) forwards;
   transform-origin: center top;
-  transform-style: preserve-3d;
+  backface-visibility: hidden;
+}
+
+.animate-sheet-out-prev {
+  animation: sheet-out-prev 0.65s cubic-bezier(0.4, 0.0, 0.2, 1) forwards;
+  transform-origin: center top;
+  backface-visibility: hidden;
+}
+
+.animate-sheet-in-prev {
+  animation: sheet-in-prev 0.65s cubic-bezier(0.0, 0.0, 0.2, 1) forwards;
+  transform-origin: center top;
   backface-visibility: hidden;
 }
 

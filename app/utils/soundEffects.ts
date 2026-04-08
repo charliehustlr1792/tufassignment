@@ -1,37 +1,35 @@
-// Page flip sound using custom audio file
-// Add your page-flip audio file to: /public/sounds/page-flip.mp3
+// Page flip sound — uses cloned audio nodes for instant, overlap-safe playback
 
-let audioElement: HTMLAudioElement | null = null
+let audioBuffer: HTMLAudioElement | null = null
+let isLoaded = false
 
-export const playPageTurnSound = (): void => {
+export const preloadPageTurnSound = (): void => {
   if (typeof window === 'undefined') return
-  
-  try {
-    // Create audio element on first use
-    if (!audioElement) {
-      audioElement = new Audio('/sounds/page-flip.mp3')
-      audioElement.preload = 'auto'
-      audioElement.volume = 0.6
-    }
-    
-    // Reset and play
-    audioElement.currentTime = 0
-    audioElement.play().catch(() => {
-      // Audio file not found - silently fail
-      console.info('Page flip sound not found. Add audio file to /public/sounds/page-flip.mp3')
-    })
-  } catch (error) {
-    console.debug('Audio not available:', error)
+
+  if (!audioBuffer) {
+    audioBuffer = new Audio('/sounds/page-flip.mp3')
+    audioBuffer.preload = 'auto'
+    audioBuffer.volume = 0.5
+    audioBuffer.addEventListener('canplaythrough', () => {
+      isLoaded = true
+    }, { once: true })
+    // Force load
+    audioBuffer.load()
   }
 }
 
-// Preload the audio file on page load
-export const preloadPageTurnSound = (): void => {
-  if (typeof window === 'undefined') return
-  
-  if (!audioElement) {
-    audioElement = new Audio('/sounds/page-flip.mp3')
-    audioElement.preload = 'auto'
-    audioElement.volume = 0.6
+export const playPageTurnSound = (): void => {
+  if (typeof window === 'undefined' || !isLoaded || !audioBuffer) return
+
+  try {
+    // Clone the audio node for instant, overlap-free playback
+    const clone = audioBuffer.cloneNode() as HTMLAudioElement
+    clone.volume = 0.5
+    clone.currentTime = 0
+    clone.play().catch(() => {})
+    // Clean up after playback finishes
+    clone.addEventListener('ended', () => clone.remove(), { once: true })
+  } catch {
+    // Silently fail if audio unavailable
   }
 }

@@ -1,14 +1,12 @@
 import {
   startOfMonth,
-  endOfMonth,
   startOfWeek,
-  endOfWeek,
+  addDays,
   eachDayOfInterval,
   isSameDay,
   isSameMonth,
   isWithinInterval,
   isBefore,
-  isAfter,
   format,
   addMonths,
   subMonths,
@@ -16,11 +14,9 @@ import {
 
 export const generateCalendarDays = (currentMonth: Date): Date[] => {
   const monthStart = startOfMonth(currentMonth)
-  const monthEnd = endOfMonth(currentMonth)
-  
   const calendarStart = startOfWeek(monthStart, { weekStartsOn: 1 })
-  const calendarEnd = endOfWeek(monthEnd, { weekStartsOn: 1 })
-  
+  const calendarEnd = addDays(calendarStart, 41)
+
   return eachDayOfInterval({ start: calendarStart, end: calendarEnd })
 }
 
@@ -38,7 +34,7 @@ export const isInRange = (
   end: Date | null
 ): boolean => {
   if (!start || !end) return false
-  
+
   try {
     return isWithinInterval(date, { start, end })
   } catch {
@@ -51,11 +47,11 @@ export const normalizeDateRange = (
   end: Date | null
 ): { start: Date | null; end: Date | null } => {
   if (!start || !end) return { start, end }
-  
+
   if (isBefore(end, start)) {
     return { start: end, end: start }
   }
-  
+
   return { start, end }
 }
 

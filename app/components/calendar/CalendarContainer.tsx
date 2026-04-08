@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import { isSameDay, addDays, subDays, isSameMonth } from 'date-fns'
 import CalendarGrid from './CalendarGrid'
-import HeroImage from './HeroImage'
+import HeroImage, { MONTH_IMAGES } from './HeroImage'
 import NotesPanel from './NotesPanel'
 import { DateRange } from '@/app/types/calendar'
 import {
@@ -14,42 +14,113 @@ import {
 } from '@/app/utils/dateUtils'
 import { playPageTurnSound, preloadPageTurnSound } from '@/app/utils/soundEffects'
 
+interface CalendarSheetProps {
+  month: Date
+  days: Date[]
+  selectedRange: DateRange
+  hoverDate: Date | null
+  onDateClick: (date: Date) => void
+  onDateHover: (date: Date | null) => void
+  onKeyDown: (e: React.KeyboardEvent, date: Date) => void
+}
+
+const CalendarSheet = ({
+  month,
+  days,
+  selectedRange,
+  hoverDate,
+  onDateClick,
+  onDateHover,
+  onKeyDown,
+}: CalendarSheetProps) => {
+  return (
+    <div className="w-full bg-white shadow-[0_8px_32px_rgba(15,23,42,0.18)]">
+      <HeroImage currentMonth={month} />
+
+      <div className="px-3 sm:px-5 pt-3 pb-4 sm:pb-5">
+        <div className="flex gap-3 sm:gap-4 items-start">
+          {/* Notes panel — fixed 130px to match reference width ratio */}
+          <div className="pt-0.5" style={{ width: '130px', minWidth: '130px', flexShrink: 0 }}>
+            <NotesPanel
+              selectedRange={selectedRange}
+              currentMonth={month}
+            />
+          </div>
+
+          {/* Calendar grid */}
+          <div className="flex-1 min-w-0">
+            <CalendarGrid
+              days={days}
+              currentMonth={month}
+              selectedRange={selectedRange}
+              hoverDate={hoverDate}
+              onDateClick={onDateClick}
+              onDateHover={onDateHover}
+              onKeyDown={onKeyDown}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 const CalendarContainer = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date())
   const [displayMonth, setDisplayMonth] = useState(new Date())
+  const [incomingMonth, setIncomingMonth] = useState<Date | null>(null)
   const [selectedRange, setSelectedRange] = useState<DateRange>({ start: null, end: null })
   const [flipState, setFlipState] = useState<'idle' | 'flipping-next' | 'flipping-prev'>('idle')
   const [hoverDate, setHoverDate] = useState<Date | null>(null)
 
   const lastScrollTime = useRef<number>(0)
   const calendarRef = useRef<HTMLDivElement>(null)
+  const touchStartX = useRef<number>(0)
+  const touchStartY = useRef<number>(0)
+  const touchEndX = useRef<number>(0)
+  const touchEndY = useRef<number>(0)
 
-  useEffect(() => { preloadPageTurnSound() }, [])
+  useEffect(() => {
+    preloadPageTurnSound()
+    Object.values(MONTH_IMAGES).forEach(imageMeta => {
+      const img = new window.Image()
+      img.src = imageMeta.url
+    })
+  }, [])
 
   const calendarDays = useMemo(() => generateCalendarDays(displayMonth), [displayMonth])
+  const incomingDays = useMemo(
+    () => (incomingMonth ? generateCalendarDays(incomingMonth) : []),
+    [incomingMonth]
+  )
 
   const changeMonth = useCallback((direction: 'next' | 'prev') => {
     if (flipState !== 'idle') return
     const nextMonth = direction === 'next'
-      ? getNextMonth(currentMonth)
-      : getPreviousMonth(currentMonth)
-    setCurrentMonth(nextMonth)
+      ? getNextMonth(displayMonth)
+      : getPreviousMonth(displayMonth)
+    setIncomingMonth(nextMonth)
     setFlipState(direction === 'next' ? 'flipping-next' : 'flipping-prev')
     playPageTurnSound()
-    setTimeout(() => { setDisplayMonth(nextMonth) }, 340)
-    setTimeout(() => { setFlipState('idle') }, 750)
-  }, [flipState, currentMonth])
+    setTimeout(() => {
+      setDisplayMonth(nextMonth)
+      setIncomingMonth(null)
+      setFlipState('idle')
+    }, 700)
+  }, [flipState, displayMonth])
 
   const handleDateClick = useCallback((date: Date) => {
     if (!isSameMonth(date, displayMonth)) {
       changeMonth(date > displayMonth ? 'next' : 'prev')
     }
     setSelectedRange(prev => {
+      // No selection yet → select this date (start only, end comes on 2nd click)
       if (!prev.start) return { start: date, end: null }
+      // Have start but no end → complete the range
       if (!prev.end) {
         if (isSameDay(date, prev.start)) return { start: date, end: date }
         return normalizeDateRange(prev.start, date)
       }
+      // Already have a complete range → start fresh
       return { start: date, end: null }
     })
     setHoverDate(null)
@@ -77,14 +148,15 @@ const CalendarContainer = () => {
     btn?.focus()
   }, [handleDateClick])
 
+  // Mouse wheel handling
   useEffect(() => {
     const el = calendarRef.current
     if (!el) return
     const handleWheel = (e: WheelEvent) => {
       e.preventDefault()
       const now = Date.now()
-      if (now - lastScrollTime.current < 900) return
-      if (Math.abs(e.deltaY) < 30) return
+      if (now - lastScrollTime.current < 850) return
+      if (Math.abs(e.deltaY) < 25) return
       lastScrollTime.current = now
       changeMonth(e.deltaY > 0 ? 'next' : 'prev')
     }
@@ -92,78 +164,149 @@ const CalendarContainer = () => {
     return () => el.removeEventListener('wheel', handleWheel)
   }, [changeMonth])
 
-  const flipClass = flipState === 'flipping-next'
-    ? 'animate-flip-next'
+  // Touch swipe handling for mobile
+  useEffect(() => {
+    const el = calendarRef.current
+    if (!el) return
+    let startedOnInteractive = false
+
+    const isInteractiveTarget = (target: EventTarget | null): boolean => {
+      if (!(target instanceof Element)) return false
+      return !!target.closest('button, input, textarea, select, a, [role="gridcell"], [contenteditable="true"]')
+    }
+
+    const handleTouchStart = (e: TouchEvent) => {
+      startedOnInteractive = isInteractiveTarget(e.target)
+      const touch = e.touches[0]
+      touchStartX.current = touch.clientX
+      touchStartY.current = e.touches[0].clientY
+      touchEndX.current = touch.clientX
+      touchEndY.current = touch.clientY
+    }
+
+    const handleTouchMove = (e: TouchEvent) => {
+      const touch = e.touches[0]
+      touchEndX.current = touch.clientX
+      touchEndY.current = touch.clientY
+    }
+
+    const handleTouchEnd = (e: TouchEvent) => {
+      if (startedOnInteractive) {
+        startedOnInteractive = false
+        return
+      }
+      const fallbackTouch = e.changedTouches[0]
+      const endX = touchEndX.current || fallbackTouch.clientX
+      const endY = touchEndY.current || fallbackTouch.clientY
+      const deltaY = touchStartY.current - endY
+      const deltaX = touchStartX.current - endX
+      const now = Date.now()
+      if (Math.abs(deltaY) < 50) return
+      if (Math.abs(deltaY) <= Math.abs(deltaX)) return
+      if (now - lastScrollTime.current < 800) return
+      lastScrollTime.current = now
+      changeMonth(deltaY > 0 ? 'next' : 'prev')
+    }
+
+    el.addEventListener('touchstart', handleTouchStart, { passive: true })
+    el.addEventListener('touchmove', handleTouchMove, { passive: false })
+    el.addEventListener('touchend', handleTouchEnd, { passive: true })
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart)
+      el.removeEventListener('touchmove', handleTouchMove)
+      el.removeEventListener('touchend', handleTouchEnd)
+    }
+  }, [changeMonth])
+
+  const currentSheetClass = flipState === 'flipping-next'
+    ? 'animate-sheet-out-next'
     : flipState === 'flipping-prev'
-      ? 'animate-flip-prev'
+      ? 'animate-sheet-out-prev'
+      : ''
+
+  const incomingSheetClass = flipState === 'flipping-next'
+    ? 'animate-sheet-in-next'
+    : flipState === 'flipping-prev'
+      ? 'animate-sheet-in-prev'
       : ''
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-200 via-gray-100 to-slate-300 flex items-center justify-center p-4 sm:p-6 md:p-8">
-
-      {/*
-        ─── OUTER CARD ───────────────────────────────────────────────
-        rounded-2xl  → visible rounded corners (larger than rounded-lg)
-        overflow-hidden → clips the hero image photo AND the chevron
-                          shapes to those same rounded corners so the
-                          card never looks square at the top
-        ─────────────────────────────────────────────────────────────
-      */}
+    <div className="h-screen bg-gradient-to-br from-slate-200 via-gray-100 to-slate-300 flex items-center justify-center px-3 py-4 sm:px-6 sm:py-6 overflow-hidden">
       <div
         ref={calendarRef}
-        className="bg-white rounded-2xl shadow-2xl w-full select-none overflow-hidden"
-        style={{ maxWidth: '540px', perspective: '1500px' }}
+        className="w-full select-none"
+        style={{ maxWidth: '480px' }}
       >
-        {/* Flipping wrapper — hero + body flip as one unit */}
-        <div
-          className={`w-full ${flipClass}`}
-          style={{
-            transformStyle: 'preserve-3d',
-            transformOrigin: 'center top',
-            willChange: 'transform',
-          }}
-          aria-live="polite"
-          aria-atomic="true"
-        >
+        {/* Page stack effect */}
+        <div className="relative w-full" style={{ perspective: '1800px' }}>
+          <div
+            className="absolute left-[3px] right-[3px] bg-white shadow-sm"
+            style={{ bottom: '-6px', height: '12px', zIndex: 0 }}
+            aria-hidden="true"
+          />
+          <div
+            className="absolute left-[6px] right-[6px] bg-gray-50 shadow-sm"
+            style={{ bottom: '-10px', height: '12px', zIndex: -1 }}
+            aria-hidden="true"
+          />
+          <div
+            className="absolute left-[9px] right-[9px] bg-gray-100"
+            style={{ bottom: '-13px', height: '12px', zIndex: -2 }}
+            aria-hidden="true"
+          />
 
-          {/* ── Hero image ── */}
-          <HeroImage currentMonth={displayMonth} />
-
-          {/* ── Calendar body: Notes LEFT | Grid RIGHT ── */}
-          <div className="px-4 pt-3 pb-4">
-            <div className="flex gap-3 items-start">
-
-              {/* Notes panel — inline ruled paper */}
-              <div className="w-[86px] flex-shrink-0 pt-0.5">
-                <NotesPanel
-                  selectedRange={selectedRange}
-                  currentMonth={displayMonth}
-                />
-              </div>
-
-              {/* Calendar grid */}
-              <div className="flex-1 min-w-0">
-                <CalendarGrid
-                  days={calendarDays}
-                  currentMonth={displayMonth}
-                  selectedRange={selectedRange}
-                  hoverDate={hoverDate}
-                  onDateClick={handleDateClick}
-                  onDateHover={handleDateHover}
-                  onKeyDown={handleKeyDown}
-                />
-              </div>
-
-            </div>
+          {/* Current sheet */}
+          <div
+            className={`w-full relative z-10 ${currentSheetClass}`}
+            style={{
+              transformOrigin: 'center top',
+              transformStyle: 'preserve-3d',
+              willChange: 'transform, opacity',
+            }}
+            aria-live="polite"
+            aria-atomic="true"
+          >
+            <CalendarSheet
+              month={displayMonth}
+              days={calendarDays}
+              selectedRange={selectedRange}
+              hoverDate={hoverDate}
+              onDateClick={handleDateClick}
+              onDateHover={handleDateHover}
+              onKeyDown={handleKeyDown}
+            />
           </div>
+
+          {/* Incoming sheet (during flip) */}
+          {incomingMonth && (
+            <div
+              className={`absolute inset-0 w-full z-20 ${incomingSheetClass}`}
+              style={{
+                transformOrigin: 'center top',
+                transformStyle: 'preserve-3d',
+                willChange: 'transform, opacity',
+              }}
+              aria-hidden="true"
+            >
+              <CalendarSheet
+                month={incomingMonth}
+                days={incomingDays}
+                selectedRange={selectedRange}
+                hoverDate={hoverDate}
+                onDateClick={handleDateClick}
+                onDateHover={handleDateHover}
+                onKeyDown={handleKeyDown}
+              />
+            </div>
+          )}
         </div>
 
-        {/* Scroll hint — outside flip wrapper so it never flips */}
-        <div className="text-center pb-2 text-[9px] text-gray-400 flex items-center justify-center gap-1.5 tracking-widest uppercase">
+        {/* Scroll/swipe hint */}
+        <div className="text-center pt-4 pb-1 text-[8px] text-gray-400 flex items-center justify-center gap-1.5 tracking-[0.15em] uppercase">
           <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 10l7-7m0 0l7 7m-7-7v18" />
           </svg>
-          Scroll to flip
+          Scroll or swipe to flip
           <svg className="w-2 h-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
           </svg>

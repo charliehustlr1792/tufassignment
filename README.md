@@ -1,36 +1,129 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Wall Calendar Component
+
+A production-grade, interactive wall calendar built with **Next.js 16**, **React 19**, **TypeScript**, and **Tailwind CSS 4**. Designed to closely replicate the aesthetic of a physical wall calendar with realistic page-flip animations.
+
+![Next.js](https://img.shields.io/badge/Next.js-16.2-black)
+![React](https://img.shields.io/badge/React-19.2-blue)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![Tailwind](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4)
+
+## Features
+
+### Core Functionality
+- **Interactive Date Range Selection** — Click to set start date, click again to set end date. Click a third time to reset and start a new range.
+- **Hover Preview** — See the potential range highlighted before committing the second click.
+- **Month Navigation** — Scroll (desktop) or swipe (mobile) to flip between months with a realistic page-turn animation.
+- **Keyboard Navigation** — Arrow keys to move between days, Enter/Space to select.
+- **Persistent Notes** — 8-line ruled notepad per month. Notes are saved to `localStorage` and persist across sessions.
+
+### Visual Design
+- **3-Layer Hero Section** — Shaped image with angled bottom edges, flanked by two cyan chevron overlays creating a distinctive V-pattern, matching the reference wall calendar design.
+- **Spiral Binding** — Decorative spiral rings along the top edge.
+- **Page Stack Effect** — Stacked pages peek from the bottom, simulating a real multi-page wall calendar.
+- **Monthly Images** — Each month displays a unique themed image.
+- **Page Flip Animation** — Smooth 3D perspective-based animation with shadow depth changes that simulates turning a physical calendar page.
+- **Sound Effects** — Optional page-turn audio on month change.
+
+### Design Details
+- **Weekend Highlighting** — Saturday and Sunday displayed in teal/cyan (both headers and day numbers).
+- **Today Indicator** — Dark pill with a cyan dot for the current date.
+- **Holiday Markers** — Indian public holidays marked with red dots and tooltip on hover.
+- **Responsive Layout** — Fits entirely within the viewport on desktop; touch-swipe enabled for mobile.
+
+## Tech Stack
+
+| Technology | Version | Purpose |
+|---|---|---|
+| Next.js | 16.2.2 | React framework with App Router |
+| React | 19.2.4 | UI library |
+| TypeScript | 5.x | Type safety |
+| Tailwind CSS | 4.x | Utility-first styling |
+| date-fns | 4.1.0 | Date manipulation |
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
+- Node.js 18+
+- npm or yarn
+
+### Installation
 
 ```bash
+# Clone the repository
+git clone <repo-url>
+cd tufassignment
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Build for Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  components/
+    calendar/
+      CalendarContainer.tsx   # Main orchestrator — layout, state, flip logic, touch/scroll handlers
+      CalendarGrid.tsx        # 7-column weekday grid with day cells
+      DayCell.tsx             # Individual day button with selection, hover, holiday states
+      HeroImage.tsx           # 3-layer hero: left chevron, shaped image, right chevron with text
+      NotesPanel.tsx          # Ruled notepad with per-month persistence
+  types/
+    calendar.ts               # TypeScript type definitions
+  utils/
+    dateUtils.ts              # Date generation and comparison helpers
+    localStorage.ts           # Note serialization/deserialization
+    soundEffects.ts           # Page-turn audio loader
+  globals.css                 # Animations, fonts, theme variables
+  layout.tsx                  # Root layout
+  page.tsx                    # Entry point
+public/
+  months/                     # Monthly hero images
+  sounds/                     # Page-flip audio
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Usage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Action | Desktop | Mobile |
+|---|---|---|
+| Next month | Scroll down | Swipe up |
+| Previous month | Scroll up | Swipe down |
+| Select date | Click | Tap |
+| Select range | Click start, then click end | Tap start, then tap end |
+| Navigate days | Arrow keys | — |
+| Add note | Click a ruled line | Tap a ruled line |
 
-## Deploy on Vercel
+## Architecture Decisions
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Two-sheet flip system** — During animation, both the outgoing and incoming month sheets exist simultaneously. The outgoing sheet rotates away while the incoming settles in, preventing any visual gap or flash.
+- **CSS keyframe animations** — Pure CSS for the flip effect (no JS animation libraries), using `perspective`, `rotateX`, and `drop-shadow` for depth.
+- **`date-fns`** — Chosen over native Date APIs for reliable, tree-shakeable date math without timezone footguns.
+- **Local images** — Month images served from `/public/months/` for fast loading and offline reliability.
+- **`localStorage` persistence** — Notes survive page refreshes without needing a backend.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment
+
+The easiest way to deploy is via [Vercel](https://vercel.com):
+
+```bash
+npm i -g vercel
+vercel
+```
+
+Or check the [Next.js deployment docs](https://nextjs.org/docs/app/building-your-application/deploying) for other options.
+
+## License
+
+MIT

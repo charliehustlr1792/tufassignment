@@ -2,8 +2,17 @@ import { Note } from '../types/calendar'
 
 const STORAGE_KEY = 'calendar_notes_v1'
 
+const hasStorage = (): boolean => {
+  if (typeof window === 'undefined') return false
+  const storage = window.localStorage as Storage | undefined
+  return !!storage
+    && typeof storage.getItem === 'function'
+    && typeof storage.setItem === 'function'
+}
+
 export const saveNotes = (notes: Note[]): void => {
   try {
+    if (!hasStorage()) return
     const serialized = JSON.stringify(notes.map(note => ({
       ...note,
       range: note.range ? {
@@ -11,7 +20,7 @@ export const saveNotes = (notes: Note[]): void => {
         end: note.range.end?.toISOString() ?? null,
       } : null,
     })))
-    localStorage.setItem(STORAGE_KEY, serialized)
+    window.localStorage.setItem(STORAGE_KEY, serialized)
   } catch (error) {
     console.error('Failed to save notes:', error)
   }
@@ -19,7 +28,8 @@ export const saveNotes = (notes: Note[]): void => {
 
 export const loadNotes = (): Note[] => {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    if (!hasStorage()) return []
+    const stored = window.localStorage.getItem(STORAGE_KEY)
     if (!stored) return []
     
     const parsed = JSON.parse(stored)

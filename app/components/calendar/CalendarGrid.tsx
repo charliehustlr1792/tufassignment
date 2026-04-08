@@ -16,7 +16,6 @@ interface CalendarGridProps {
   onKeyDown: (e: React.KeyboardEvent, date: Date) => void
 }
 
-// SAT = index 5, SUN = index 6
 const WEEKDAY_LABELS = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN']
 
 const isInHoverRange = (date: Date, sel: DateRange, hover: Date | null): boolean => {
@@ -40,17 +39,17 @@ const CalendarGrid = memo(({
     <div role="grid" aria-label="Calendar" className="w-full">
 
       {/* Weekday header row */}
-      <div className="grid grid-cols-7 mb-1">
+      <div className="grid grid-cols-7 mb-0.5">
         {WEEKDAY_LABELS.map((label, idx) => {
           const isWeekend = idx >= 5
           return (
             <div
               key={label}
-              className={`text-center font-bold tracking-wide py-1 ${
-                // ── SAT/SUN → rose to match the day number colours in DayCell ──
-                isWeekend ? 'text-cyan-500 font-extrabold' : 'text-gray-500'
-                }`}
-              style={{ fontSize: '10px' }}
+              className={`text-center tracking-[0.08em] py-1 text-[10px] sm:text-[11px] ${
+                isWeekend
+                  ? 'text-[#0891b2] font-extrabold'
+                  : 'text-gray-500 font-bold'
+              }`}
             >
               {label}
             </div>
